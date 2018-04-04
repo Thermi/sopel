@@ -1,5 +1,5 @@
 # coding=utf-8
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import json
 import os.path
@@ -23,7 +23,7 @@ def _deserialize(value):
     # ignore json parsing errors
     try:
         value = json.loads(value)
-    except:
+    except ValueError:
         pass
     return value
 
@@ -52,7 +52,7 @@ class SopelDB(object):
 
     def connect(self):
         """Return a raw database connection object."""
-        return sqlite3.connect(self.filename)
+        return sqlite3.connect(self.filename, timeout=10)
 
     def execute(self, *args, **kwargs):
         """Execute an arbitrary SQL query against the database.
@@ -71,7 +71,7 @@ class SopelDB(object):
             self.execute('SELECT * FROM nicknames;')
             self.execute('SELECT * FROM nick_values;')
             self.execute('SELECT * FROM channel_values;')
-        except:
+        except Exception:  # TODO: Be specific
             pass
         else:
             return
@@ -140,7 +140,7 @@ class SopelDB(object):
         values = [nick_id, alias.lower(), alias]
         try:
             self.execute(sql, values)
-        except sqlite3.IntegrityError as e:
+        except sqlite3.IntegrityError:
             raise ValueError('Alias already exists.')
 
     def set_nick_value(self, nick, key, value):
@@ -174,7 +174,7 @@ class SopelDB(object):
         nick_id = self.get_nick_id(alias, False)
         count = self.execute('SELECT COUNT(*) FROM nicknames WHERE nick_id = ?',
                              [nick_id]).fetchone()[0]
-        if count == 0:
+        if count <= 1:
             raise ValueError('Given alias is the only entry in its group.')
         self.execute('DELETE FROM nicknames WHERE slug = ?', [alias.lower()])
 

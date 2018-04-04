@@ -1,13 +1,13 @@
-# coding=utf8
+# coding=utf-8
 """
 seen.py - Sopel Seen Module
 Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import time
 import datetime
@@ -23,6 +23,9 @@ def seen(bot, trigger):
         bot.say(".seen <nick> - Reports when <nick> was last seen.")
         return
     nick = trigger.group(2).strip()
+    if nick == bot.nick:
+        bot.reply("I'm right here!")
+        return
     timestamp = bot.db.get_nick_value(nick, 'seen_timestamp')
     if timestamp:
         channel = bot.db.get_nick_value(nick, 'seen_channel')

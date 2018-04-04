@@ -1,7 +1,6 @@
-# coding=utf8
+# coding=utf-8
 
-from __future__ import unicode_literals
-from __future__ import print_function
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import os.path
 
@@ -13,12 +12,26 @@ from sopel.tools import Identifier
 
 
 def _find_certs():
-    certs = '/etc/pki/tls/cert.pem'
-    if not os.path.isfile(certs):
-        certs = '/etc/ssl/certs/ca-certificates.crt'
-        if not os.path.isfile(certs):
-            return None
-    return certs
+    """
+    Find the TLS root CA store.
+
+    :returns: str (path to file)
+    """
+    # check if the root CA store is at a known location
+    locations = [
+        '/etc/pki/tls/cert.pem',  # best first guess
+        '/etc/ssl/certs/ca-certificates.crt',  # Debian
+        '/etc/ssl/cert.pem',  # FreeBSD base OpenSSL
+        '/usr/local/openssl/cert.pem',  # FreeBSD userland OpenSSL
+        '/etc/pki/tls/certs/ca-bundle.crt',  # RHEL 6 / Fedora
+        '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem',  # RHEL 7 / CentOS
+        '/etc/pki/tls/cacert.pem',  # OpenELEC
+        '/etc/ssl/ca-bundle.pem',  # OpenSUSE
+    ]
+    for certs in locations:
+        if os.path.isfile(certs):
+            return certs
+    return None
 
 
 def configure(config):
@@ -44,11 +57,17 @@ class CoreSection(StaticSection):
     admins = ListAttribute('admins')
     """The list of people (other than the owner) who can administer the bot"""
 
+    admin_accounts = ListAttribute('admin_accounts')
+    """The list of accounts (other than the owner's) who can administer the bot.
+
+    This should not be set for networks that do not support IRCv3 account
+    capabilities."""
+
     auth_method = ChoiceAttribute('auth_method', choices=[
-        'nickserv', 'authserv', 'sasl', 'server'])
+        'nickserv', 'authserv', 'Q', 'sasl', 'server'])
     """The method to use to authenticate with the server.
 
-    Can be ``nickserv``, ``authserv``, ``sasl``, or ``server``."""
+    Can be ``nickserv``, ``authserv``, ``Q``, ``sasl``, or ``server``."""
 
     auth_password = ValidatedAttribute('auth_password')
     """The password to use to authenticate with the server."""
@@ -113,7 +132,7 @@ class CoreSection(StaticSection):
     Regular expression syntax is used"""
 
     log_raw = ValidatedAttribute('log_raw', bool, default=True)
-    """Whether a log of raw lines as sent and recieved should be kept."""
+    """Whether a log of raw lines as sent and received should be kept."""
 
     logdir = FilenameAttribute('logdir', directory=True, default='logs')
     """Directory in which to place logs."""
@@ -130,7 +149,7 @@ class CoreSection(StaticSection):
     modes = ValidatedAttribute('modes', default='B')
     """User modes to be set on connection."""
 
-    name = ValidatedAttribute('name', default='Sopel: http://sopel.chat')
+    name = ValidatedAttribute('name', default='Sopel: https://sopel.chat')
     """The "real name" of your bot for WHOIS responses."""
 
     nick = ValidatedAttribute('nick', Identifier, default=Identifier('Sopel'))
@@ -151,6 +170,13 @@ class CoreSection(StaticSection):
     owner = ValidatedAttribute('owner', default=NO_DEFAULT)
     """The IRC name of the owner of the bot."""
 
+    owner_account = ValidatedAttribute('owner_account')
+    """The services account name of the owner of the bot.
+
+    This should only be set on networks which support IRCv3 account
+    capabilities.
+    """
+
     pid_dir = FilenameAttribute('pid_dir', directory=True, default='.')
     """The directory in which to put the file Sopel uses to track its process ID.
 
@@ -165,6 +191,9 @@ class CoreSection(StaticSection):
 
     It is a regular expression (so the default, ``\.``, means commands start
     with a period), though using capturing groups will create problems."""
+
+    reply_errors = ValidatedAttribute('reply_errors', bool, default=True)
+    """Whether to message the sender of a message that triggered an error with the exception."""
 
     throttle_join = ValidatedAttribute('throttle_join', int)
     """Slow down the initial join of channels to prevent getting kicked.

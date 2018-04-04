@@ -1,10 +1,10 @@
-# coding=utf8
+# coding=utf-8
 """GeoIP lookup module"""
 # Copyright 2011, Dimitri Molenaars, TyRope.nl,
 # Copyright © 2013, Elad Alfassa <elad@fedoraproject.org>
 # Licensed under the Eiffel Forum License 2.
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import pygeoip
 import socket
@@ -41,10 +41,7 @@ def configure(config):
                                 'Path of the GeoIP db files')
 
 
-def setup(bot=None):
-    if not bot:
-        return  # Because of some weird pytest thing?
-
+def setup(bot):
     bot.config.define_section('ip', GeoipSection)
 
 
@@ -95,7 +92,7 @@ def _find_geoip_db(bot):
 
 @commands('iplookup', 'ip')
 @example('.ip 8.8.8.8',
-         r'[IP/Host Lookup] Hostname: google-public-dns-a.google.com | Location: United States | Region: CA | ISP: AS15169 Google Inc.',
+         r'[IP/Host Lookup] Hostname: google-public-dns-a.google.com | Location: United States | ISP: AS15169 Google LLC',
          re=True,
          ignore='Downloading GeoIP database, please wait...')
 def ip(bot, trigger):
@@ -118,6 +115,8 @@ def ip(bot, trigger):
         response += " | Location: %s" % gi_city.country_name_by_name(query)
     except AttributeError:
         response += ' | Location: Unknown'
+    except socket.gaierror:
+        return bot.say('[IP/Host Lookup] Unable to resolve IP/Hostname')
 
     region_data = gi_city.region_by_name(query)
     try:

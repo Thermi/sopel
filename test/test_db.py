@@ -1,11 +1,10 @@
-# coding=utf8
+# coding=utf-8
 """Tests for the new database functionality.
 
 TODO: Most of these tests assume functionality tested in other tests. This is
 enough to get everything working (and is better than nothing), but best
 practice would probably be not to do that."""
-from __future__ import unicode_literals
-from __future__ import absolute_import
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import json
 import os
@@ -83,7 +82,6 @@ def test_get_nick_id(db):
 
 
 def test_alias_nick(db):
-    conn = sqlite3.connect(db_filename)
     nick = 'Embolalia'
     aliases = ['EmbölaliÅ', 'Embo`work', 'Embo']
 
@@ -245,11 +243,11 @@ def test_get_channel_value(db):
 def test_get_nick_or_channel_value(db):
     db.set_nick_value('asdf', 'qwer', 'poiu')
     db.set_channel_value('#asdf', 'qwer', '/.,m')
-    assert db.get_nick_or_channel_value('asdf', 'qwer', 'poiu')
-    assert db.get_nick_or_channel_value('#asdf', 'qwer', '/.,m')
+    assert db.get_nick_or_channel_value('asdf', 'qwer') == 'poiu'
+    assert db.get_nick_or_channel_value('#asdf', 'qwer') == '/.,m'
 
 
-def test_get_nick_or_channel_value(db):
+def test_get_preferred_value(db):
     db.set_nick_value('asdf', 'qwer', 'poiu')
     db.set_channel_value('#asdf', 'qwer', '/.,m')
     db.set_channel_value('#asdf', 'lkjh', '1234')

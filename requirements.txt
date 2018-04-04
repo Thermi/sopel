@@ -1,6 +1,7 @@
-feedparser
+xmltodict
 pytz
-lxml
-praw
+praw>=4.0.0,<6.0.0
 pyenchant
 pygeoip
+ipython
+requests>=2.0.0,<3.0.0

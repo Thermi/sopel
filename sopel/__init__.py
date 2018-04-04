@@ -1,16 +1,27 @@
 # coding=utf-8
-"""
-__init__.py - Sopel Init Module
-Copyright 2008, Sean B. Palmer, inamidst.com
-Copyright 2012, Edward Powell, http://embolalia.net
-Copyright © 2012, Elad Alfassa <elad@fedoraproject.org>
+# ASCII ONLY IN THIS FILE THOUGH!!!!!!!
+# Python does some stupid bullshit of respecting LC_ALL over the encoding on the
+# file, so in order to undo Python's ridiculous fucking idiocy, we have to have
+# our own check.
 
-Licensed under the Eiffel Forum License 2.
+# Copyright 2008, Sean B. Palmer, inamidst.com
+# Copyright 2012, Elsie Powell, http://embolalia.com
+# Copyright 2012, Elad Alfassa <elad@fedoraproject.org>
+#
+# Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat/
-"""
-from __future__ import unicode_literals
-from __future__ import absolute_import
+from __future__ import unicode_literals, absolute_import, print_function, division
+
+import locale
+import sys
+loc = locale.getlocale()
+if sys.version_info.major > 2:
+    if not loc[1] or 'UTF-8' not in loc[1]:
+        print('WARNING!!! You are running with a non-UTF8 locale environment '
+              'variables (e.g. LC_ALL is set to "C"), which makes Python 3 do '
+              'stupid things. If you get strange errors, please set it to '
+              'something like "en_US.UTF-8".', file=sys.stderr)
+
 
 from collections import namedtuple
 import os
@@ -19,7 +30,7 @@ import time
 import traceback
 import signal
 
-__version__ = '6.0.0b0'
+__version__ = '6.5.2'
 
 
 def _version_info(version=__version__):
@@ -34,19 +45,20 @@ def _version_info(version=__version__):
         level = 'beta'
     elif level == 'rc':
         level = 'candidate'
-    elif not level and version_groups[5] is None:
+    elif not level and version_groups[4] is None:
         level = 'final'
     else:
         level = 'alpha'
     version_type = namedtuple('version_info',
                               'major, minor, micro, releaselevel, serial')
     return version_type(major, minor, micro, level, serial)
+
+
 version_info = _version_info()
 
 
 def run(config, pid_file, daemon=False):
     import sopel.bot as bot
-    import sopel.web as web
     import sopel.logger
     from sopel.tools import stderr
     delay = 20
@@ -54,7 +66,6 @@ def run(config, pid_file, daemon=False):
     if not config.core.ca_certs:
         stderr('Could not open CA certificates file. SSL will not '
                'work properly.')
-    web.ca_certs = config.core.ca_certs
 
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1 or sig == signal.SIGTERM:
@@ -71,11 +82,11 @@ def run(config, pid_file, daemon=False):
             p.run(config.core.host, int(config.core.port))
         except KeyboardInterrupt:
             break
-        except Exception:
+        except Exception:  # TODO: Be specific
             trace = traceback.format_exc()
             try:
                 stderr(trace)
-            except:
+            except Exception:  # TODO: Be specific
                 pass
             logfile = open(os.path.join(config.core.logdir, 'exceptions.log'), 'a')
             logfile.write('Critical exception in core')

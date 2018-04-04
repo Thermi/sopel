@@ -1,12 +1,12 @@
-# coding=utf8
+# coding=utf-8
 """
 uptime.py - Uptime module
 Copyright 2014, Fabian Neundorf
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel.module import commands
 import datetime

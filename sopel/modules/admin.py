@@ -1,4 +1,4 @@
-# coding=utf8
+# coding=utf-8
 """
 admin.py - Sopel Admin Module
 Copyright 2010-2011, Sean B. Palmer (inamidst.com) and Michael Yanovich
@@ -8,9 +8,9 @@ Copyright 2013, Ari Koivula <ari@koivu.la>
 
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel.config.types import (
     StaticSection, ValidatedAttribute, FilenameAttribute
@@ -34,7 +34,6 @@ def configure(config):
 
 
 def setup(bot):
-    return
     bot.config.define_section('admin', AdminSection)
 
 
@@ -214,7 +213,7 @@ def set_config(bot, trigger):
             if isinstance(descriptor, FilenameAttribute):
                 value = descriptor.parse(bot.config, descriptor, value)
             else:
-                value = descriptor.parse(descriptor, value)
+                value = descriptor.parse(value)
         except ValueError as exc:
             bot.say("Can't set attribute: " + str(exc))
             return

@@ -6,10 +6,9 @@ Copyright 2008, Sean B. Palmer, inamidst.com
 Copyright © 2012-2014, Elad Alfassa <elad@fedoraproject.org>
 Licensed under the Eiffel Forum License 2.
 
-http://sopel.chat
+https://sopel.chat
 """
-from __future__ import unicode_literals
-from __future__ import print_function
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 import sys
 from sopel.tools import stderr
@@ -63,7 +62,7 @@ def main(argv=None):
         parser.add_argument('-c', '--config', metavar='filename',
                             help='use a specific configuration file')
         parser.add_argument("-d", '--fork', action="store_true",
-                            dest="deamonize", help="Deamonize sopel")
+                            dest="daemonize", help="Daemonize sopel")
         parser.add_argument("-q", '--quit', action="store_true", dest="quit",
                             help="Gracefully quit Sopel")
         parser.add_argument("-k", '--kill', action="store_true", dest="kill",
@@ -75,7 +74,7 @@ def main(argv=None):
                             dest="migrate_configs",
                             help="Migrate config files to the new format")
         parser.add_argument('--quiet', action="store_true", dest="quiet",
-                            help="Supress all output")
+                            help="Suppress all output")
         parser.add_argument('-w', '--configure-all', action='store_true',
                             dest='wizard', help='Run the configuration wizard.')
         parser.add_argument('--configure-modules', action='store_true',
@@ -84,7 +83,10 @@ def main(argv=None):
                                 'module configuration options.'))
         parser.add_argument('-v', '--version', action="store_true",
                             dest="version", help="Show version number and exit")
-        opts = parser.parse_args()
+        if argv:
+            opts = parser.parse_args(argv)
+        else:
+            opts = parser.parse_args()
 
         # Step Two: "Do not run as root" checks.
         try:
@@ -103,7 +105,7 @@ def main(argv=None):
                                    sys.version_info.minor,
                                    sys.version_info.micro)
             print('Sopel %s (running on python %s)' % (__version__, py_ver))
-            print('http://sopel.chat/')
+            print('https://sopel.chat/')
             return
         elif opts.wizard:
             _wizard('all', opts.config)
@@ -145,7 +147,7 @@ def main(argv=None):
 
         logfile = os.path.os.path.join(config_module.core.logdir, 'stdio.log')
 
-        config_module._is_deamonized = opts.deamonize
+        config_module._is_daemonized = opts.daemonize
 
         sys.stderr = tools.OutputRedirect(logfile, True, opts.quiet)
         sys.stdout = tools.OutputRedirect(logfile, False, opts.quiet)
@@ -181,14 +183,13 @@ def main(argv=None):
                     else:
                         os.kill(old_pid, signal.SIGTERM)
                     sys.exit(0)
-            elif old_pid is None or (not tools.check_pid(old_pid)
-                                     and (opts.kill or opts.quit)):
+            elif opts.kill or opts.quit:
                 stderr('Sopel is not running!')
                 sys.exit(1)
         elif opts.quit or opts.kill:
             stderr('Sopel is not running!')
             sys.exit(1)
-        if opts.deamonize:
+        if opts.daemonize:
             child_pid = os.fork()
             if child_pid is not 0:
                 sys.exit()
@@ -200,5 +201,7 @@ def main(argv=None):
     except KeyboardInterrupt:
         print("\n\nInterrupted")
         os._exit(1)
+
+
 if __name__ == '__main__':
     main()

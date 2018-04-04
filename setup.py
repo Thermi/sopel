@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# coding=utf8
-from __future__ import unicode_literals, print_function
+# coding=utf-8
+from __future__ import unicode_literals, absolute_import, print_function, division
 
 from sopel import __version__
 import sys
@@ -18,17 +18,6 @@ except ImportError:
     )
     sys.exit(1)
 
-try:
-    import lxml  # NOQA
-except ImportError:
-    print(
-        '----- WARNING ----- SERIOUSLY, READ THIS ----- I MEAN IT -----\n'
-        'You do not have lxml installed. This installer will attempt to '
-        'install it, but it frequently fails. Please follow the instructions '
-        'at http://lxml.de/installation.html if installation does not succeed.',
-        file=sys.stderr,
-    )
-
 if sys.version_info < (2, 7) or (
         sys.version_info[0] > 3 and sys.version_info < (3, 3)):
     # Maybe not the cleanest or best way to do this, but I'm tired of answering
@@ -40,6 +29,7 @@ def read_reqs(path):
     with open(path, 'r') as fil:
         return list(fil.readlines())
 
+
 requires = read_reqs('requirements.txt')
 if sys.version_info[0] < 3:
     requires.append('backports.ssl_match_hostname')
@@ -49,9 +39,9 @@ setup(
     name='sopel',
     version=__version__,
     description='Simple and extendible IRC bot',
-    author='Edward Powell',
+    author='Elsie Powell',
     author_email='powell.518@gmail.com',
-    url='http://sopel.chat/',
+    url='https://sopel.chat/',
     long_description=(
         "Sopel is a simple, extendible, easy-to-use IRC Utility bot, written "
         "in Python. It's designed to be easy to use, easy to run, and easy to "
@@ -63,7 +53,6 @@ setup(
               str('sopel.config'), str('sopel.tools')],
     license='Eiffel Forum License, version 2',
     platforms='Linux x86, x86-64',
-    requires=requires,
     install_requires=requires,
     entry_points={'console_scripts': ['sopel = sopel.run_script:main']},
 )
